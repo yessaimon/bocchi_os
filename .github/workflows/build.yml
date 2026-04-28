@@ -36,15 +36,14 @@ jobs:
           git config --global user.email "bocchi@os.com"
           git config --global user.name "Bocchi"
           
-          # Инициализируем ОФИЦИАЛЬНУЮ базу LineageOS 21.0 (Android 14)
+          # Инициализируем с глубиной 1 здесь
           repo init -u https://github.com/LineageOS/android.git -b lineage-21.0 --git-lfs --depth=1
           
-          # Создаем папку для локальных манифестов и закидываем туда твой файл
           mkdir -p .repo/local_manifests
           curl -L https://raw.githubusercontent.com/yessaimon/bocchi_os/main/manifest.xml > .repo/local_manifests/bocchi.xml
           
-          # Качаем всё вместе (займет 30-50 минут)
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --depth=1
+          # Синхронизация без лишних флагов, которые вызывают ошибки
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       # 4. ПОДГОТОВКА СБОРКИ
       - name: Setup Build Environment
