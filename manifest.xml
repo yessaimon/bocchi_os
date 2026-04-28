@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
   <remote name="lineage" fetch="https://github.com/LineageOS" revision="lineage-21.0" />
-  <remote name="yessaimon" fetch="https://github.com/yessaimon" />
-  <remote name="github" fetch="https://github.com" />
+  <remote name="github" fetch="https://github.com/" />
+  <remote name="yessaimon" fetch="https://github.com/yessaimon/" />
 
   <project path="device/xiaomi/sapphire" name="android_device_xiaomi_sapphire" remote="yessaimon" revision="lineage-23.2" />
-  <project path="vendor/xiaomi/sapphire" name="android_vendor_xiaomi_sapphire" remote="yessaimon" revision="lineage-23.2" />
+  <project path="vendor/xiaomi/sapphire" name="vendor_xiaomi_sapphire" remote="yessaimon" revision="lineage-23.2" />
 
   <project path="kernel/xiaomi/sapphire" name="ozturkmutlu65/android_kernel_xiaomi_sapphire" remote="github" revision="lineage-21" />
 </manifest>
