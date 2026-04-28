@@ -1,0 +1,32 @@
+name: Bocchi OS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Repo
+        run: |
+          mkdir ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          sudo ln -sf ~/bin/repo /usr/bin/repo
+
+      - name: Initialize Repo
+        run: |
+          repo init -u https://github.com/yessaimon/bocchi_os.git -b main -m manifest.xml
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+
+      - name: Setup Build Environment
+        run: |
+          source build/envsetup.sh
+          lunch bocchi_sapphire-userdebug # То самое имя, которое мы вписали в mk файл!
+
+      - name: Build Bocchi OS
+        run: |
+          mka bacon -j$(nproc --all)
