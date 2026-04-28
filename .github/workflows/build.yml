@@ -1,3 +1,4 @@
+
 name: Bocchi OS Build
 
 on:
@@ -10,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. ОЧИСТКА МЕСТА (Чтобы влезло ~100ГБ исходников)
+      # 1. ОЧИСТКА МЕСТА (~100ГБ)
       - name: Cleanup and Free Space
         run: |
           sudo docker image prune -a -f
@@ -36,13 +37,17 @@ jobs:
           git config --global user.email "bocchi@os.com"
           git config --global user.name "Bocchi"
           
-          # Инициализируем с глубиной 1 здесь
+          # Чистим старые конфиги, чтобы не было конфликтов
+          rm -rf .repo
+          
+          # Инициализируем LineageOS
           repo init -u https://github.com/LineageOS/android.git -b lineage-21.0 --git-lfs --depth=1
           
+          # Подкладываем твой локальный манифест
           mkdir -p .repo/local_manifests
           curl -L https://raw.githubusercontent.com/yessaimon/bocchi_os/main/manifest.xml > .repo/local_manifests/bocchi.xml
           
-          # Синхронизация без лишних флагов, которые вызывают ошибки
+          # Качаем всё добро
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       # 4. ПОДГОТОВКА СБОРКИ
