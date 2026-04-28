@@ -17,15 +17,34 @@ jobs:
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
 
+      - name: Debug Network and Access
+        run: |
+          echo "=== ТЕСТ ДОСТУПА К РЕПОЗИТОРИЯМ ==="
+          echo "Проверка Vendor (yessaimon):"
+          git ls-remote https://github.com/yessaimon/vendor_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Vendor"
+          
+          echo -e "\nПроверка Device Tree (yessaimon):"
+          git ls-remote https://github.com/yessaimon/android_device_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Device Tree"
+          
+          echo -e "\nПроверка Kernel (ozturkmutlu65):"
+          git ls-remote https://github.com/ozturkmutlu65/android_kernel_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Kernel"
+          
+          echo -e "\nПинг GitHub:"
+          ping -c 3 github.com
+          echo "===================================="
+
       - name: Initialize Repo
         run: |
+          # Настраиваем гит, иначе repo может капризничать
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
           repo init -u https://github.com/yessaimon/bocchi_os.git -b main -m manifest.xml
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Setup Build Environment
         run: |
           source build/envsetup.sh
-          lunch bocchi_sapphire-userdebug # То самое имя, которое мы вписали в mk файл!
+          lunch bocchi_sapphire-userdebug
 
       - name: Build Bocchi OS
         run: |
