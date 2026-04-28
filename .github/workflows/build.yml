@@ -20,32 +20,34 @@ jobs:
       - name: Debug Network and Access
         run: |
           echo "=== ТЕСТ ДОСТУПА К РЕПОЗИТОРИЯМ ==="
-          echo "Проверка Vendor (yessaimon):"
-          git ls-remote https://github.com/yessaimon/vendor_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Vendor"
+          echo "Проверка твоего Вендора:"
+          git ls-remote https://github.com/yessaimon/android_vendor_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Vendor"
           
-          echo -e "\nПроверка Device Tree (yessaimon):"
+          echo -e "\nПроверка твоего Device Tree:"
           git ls-remote https://github.com/yessaimon/android_device_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Device Tree"
           
-          echo -e "\nПроверка Kernel (ozturkmutlu65):"
-          git ls-remote https://github.com/ozturkmutlu65/android_kernel_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Kernel"
-          
-          echo -e "\nПинг GitHub:"
-          ping -c 3 github.com
+          echo -e "\nПроверка НАЙДЕННОГО ЯДРА (Prebuilt):"
+          git ls-remote https://github.com/sm6225-sapphire/device_xiaomi_sapphire-kernel.git || echo "ОШИБКА: Нет доступа к Prebuilt Kernel"
           echo "===================================="
 
       - name: Initialize Repo
         run: |
-          # Настраиваем гит, иначе repo может капризничать
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          # Настройка гита для работы repo
+          git config --global user.email "bocchi@os.com"
+          git config --global user.name "Bocchi"
+          
+          # Инициализация и синхронизация (тянем только нужное, чтобы сэкономить время)
           repo init -u https://github.com/yessaimon/bocchi_os.git -b main -m manifest.xml
           repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
       - name: Setup Build Environment
         run: |
+          # Подключаем скрипты сборки
           source build/envsetup.sh
+          # Выбираем твой девайс
           lunch bocchi_sapphire-userdebug
 
       - name: Build Bocchi OS
         run: |
+          # Погнали собирать саму прошивку!
           mka bacon -j$(nproc --all)
