@@ -51,3 +51,14 @@ jobs:
         run: |
           # Погнали собирать саму прошивку!
           mka bacon -j$(nproc --all)
+      - name: Setup Build Environment
+        run: |
+          # Проверяем, где мы находимся и что скачалось (для подстраховки)
+          ls -R build/envsetup.sh || echo "Файл не найден в корне, ищем..."
+          source build/envsetup.sh
+          lunch bocchi_sapphire-userdebug
+
+      - name: Build Bocchi OS
+        run: |
+          source build/envsetup.sh
+          mka bacon -j$(nproc --all)
