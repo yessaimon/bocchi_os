@@ -10,6 +10,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 1. ЧИСТИМ ХЛАМ (Освобождаем ~100ГБ)
+      - name: Cleanup and Free Space
+        run: |
+          sudo docker image prune -a -f
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "/usr/local/share/powershell"
+          sudo rm -rf "/usr/local/lib/node_modules"
+          echo "Место после очистки:"
+          df -h
+
+      # 2. СТАВИМ REPO
       - name: Install Repo
         run: |
           mkdir ~/bin
@@ -17,47 +31,25 @@ jobs:
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
 
-      - name: Debug Network and Access
+      # 3. КАЧАЕМ ИСХОДНИКИ
+      - name: Initialize and Sync
         run: |
-          echo "=== ТЕСТ ДОСТУПА К РЕПОЗИТОРИЯМ ==="
-          echo "Проверка твоего Вендора:"
-          git ls-remote https://github.com/yessaimon/android_vendor_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Vendor"
-          
-          echo -e "\nПроверка твоего Device Tree:"
-          git ls-remote https://github.com/yessaimon/android_device_xiaomi_sapphire.git || echo "ОШИБКА: Нет доступа к Device Tree"
-          
-          echo -e "\nПроверка НАЙДЕННОГО ЯДРА (Prebuilt):"
-          git ls-remote https://github.com/sm6225-sapphire/device_xiaomi_sapphire-kernel.git || echo "ОШИБКА: Нет доступа к Prebuilt Kernel"
-          echo "===================================="
-
-      - name: Initialize Repo
-        run: |
-          # Настройка гита для работы repo
           git config --global user.email "bocchi@os.com"
           git config --global user.name "Bocchi"
           
-          # Инициализация и синхронизация (тянем только нужное, чтобы сэкономить время)
+          # Инициализируем твой манифест
           repo init -u https://github.com/yessaimon/bocchi_os.git -b main -m manifest.xml
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          
+          # Качаем только текущий срез (--depth=1), чтобы влезло на диск
+          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --depth=1
 
+      # 4. ГОТОВИМ ОКРУЖЕНИЕ
       - name: Setup Build Environment
         run: |
-          # Подключаем скрипты сборки
-          source build/envsetup.sh
-          # Выбираем твой девайс
-          lunch bocchi_sapphire-userdebug
-
-      - name: Build Bocchi OS
-        run: |
-          # Погнали собирать саму прошивку!
-          mka bacon -j$(nproc --all)
-      - name: Setup Build Environment
-        run: |
-          # Проверяем, где мы находимся и что скачалось (для подстраховки)
-          ls -R build/envsetup.sh || echo "Файл не найден в корне, ищем..."
           source build/envsetup.sh
           lunch bocchi_sapphire-userdebug
 
+      # 5. КОМПИЛЯЦИЯ (Самый долгий этап)
       - name: Build Bocchi OS
         run: |
           source build/envsetup.sh
