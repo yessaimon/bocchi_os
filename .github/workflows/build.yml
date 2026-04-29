@@ -1,4 +1,3 @@
-
 name: Bocchi OS Build
 
 on:
@@ -11,7 +10,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. ОЧИСТКА МЕСТА (~100ГБ)
+      # 1. ОЧИСТКА МЕСТА (Освобождаем ~100ГБ под исходники)
       - name: Cleanup and Free Space
         run: |
           sudo docker image prune -a -f
@@ -31,24 +30,24 @@ jobs:
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
 
-      # 3. ИНИЦИАЛИЗАЦИЯ И СИНХРОНИЗАЦИЯ
+      # 3. ИНИЦИАЛИЗАЦИЯ И УСКОРЕННАЯ СИНХРОНИЗАЦИЯ
       - name: Initialize and Sync
         run: |
           git config --global user.email "bocchi@os.com"
           git config --global user.name "Bocchi"
           
-          # Чистим старые конфиги, чтобы не было конфликтов
+          # Полная очистка перед стартом
           rm -rf .repo
           
-          # Инициализируем LineageOS
+          # Инициализируем только нужную ветку с глубиной 1
           repo init -u https://github.com/LineageOS/android.git -b lineage-21.0 --git-lfs --depth=1
           
-          # Подкладываем твой локальный манифест
+          # Подтягиваем твой манифест
           mkdir -p .repo/local_manifests
           curl -L https://raw.githubusercontent.com/yessaimon/bocchi_os/main/manifest.xml > .repo/local_manifests/bocchi.xml
           
-          # Качаем всё добро
-          repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+          # Турбо-синхронизация: без тегов, только текущая ветка, 16 потоков
+          repo sync -c -j16 --force-sync --no-clone-bundle --no-tags --current-branch
 
       # 4. ПОДГОТОВКА СБОРКИ
       - name: Setup Build Environment
@@ -56,7 +55,7 @@ jobs:
           source build/envsetup.sh
           lunch lineage_sapphire-userdebug
 
-      # 5. СТАРТ КОМПИЛЯЦИИ
+      # 5. СТАРТ КОМПИЛЯЦИИ (Тут начнется магия)
       - name: Build Bocchi OS
         run: |
           source build/envsetup.sh
