@@ -1,3 +1,4 @@
+
 name: Bocchi OS Build
 
 on:
@@ -10,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. ОЧИСТКА МЕСТА (Освобождаем ~100ГБ под исходники)
+      # 1. ОЧИСТКА МЕСТА (Освобождаем ~100ГБ)
       - name: Cleanup and Free Space
         run: |
           sudo docker image prune -a -f
@@ -30,24 +31,27 @@ jobs:
           chmod a+x ~/bin/repo
           sudo ln -sf ~/bin/repo /usr/bin/repo
 
-      # 3. ИНИЦИАЛИЗАЦИЯ И УСКОРЕННАЯ СИНХРОНИЗАЦИЯ
+      # 3. ИНИЦИАЛИЗАЦИЯ И СИНХРОНИЗАЦИЯ (Облегченная версия)
       - name: Initialize and Sync
         run: |
           git config --global user.email "bocchi@os.com"
           git config --global user.name "Bocchi"
           
-          # Полная очистка перед стартом
+          # Проверяем свободное место перед стартом
+          df -h
+          
+          # Чистим старое
           rm -rf .repo
           
-          # Инициализируем только нужную ветку с глубиной 1
-          repo init -u https://github.com/LineageOS/android.git -b lineage-21.0 --git-lfs --depth=1
+          # Инициализация без лишнего мусора (depth=1 экономит кучу места)
+          repo init -u https://github.com/LineageOS/android.git -b lineage-21.0 --depth=1
           
-          # Подтягиваем твой манифест
+          # Твой манифест
           mkdir -p .repo/local_manifests
           curl -L https://raw.githubusercontent.com/yessaimon/bocchi_os/main/manifest.xml > .repo/local_manifests/bocchi.xml
           
-          # Турбо-синхронизация: без тегов, только текущая ветка, 16 потоков
-          repo sync -c -j4 --force-sync --no-clone-bundle --no-tags --current-branch
+          # Синхронизация в 4 потока (самый стабильный вариант)
+          repo sync -c -j4 --force-sync --no-tags --current-branch --no-clone-bundle
 
       # 4. ПОДГОТОВКА СБОРКИ
       - name: Setup Build Environment
@@ -55,7 +59,7 @@ jobs:
           source build/envsetup.sh
           lunch lineage_sapphire-userdebug
 
-      # 5. СТАРТ КОМПИЛЯЦИИ (Тут начнется магия)
+      # 5. СТАРТ КОМПИЛЯЦИИ
       - name: Build Bocchi OS
         run: |
           source build/envsetup.sh
