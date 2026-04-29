@@ -47,7 +47,7 @@ jobs:
           curl -L https://raw.githubusercontent.com/yessaimon/bocchi_os/main/manifest.xml > .repo/local_manifests/bocchi.xml
           
           # Турбо-синхронизация: без тегов, только текущая ветка, 16 потоков
-          repo sync -c -j16 --force-sync --no-clone-bundle --no-tags --current-branch
+          repo sync -c -j4 --force-sync --no-clone-bundle --no-tags --current-branch
 
       # 4. ПОДГОТОВКА СБОРКИ
       - name: Setup Build Environment
